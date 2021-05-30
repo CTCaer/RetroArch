@@ -1327,21 +1327,28 @@ static void frontend_unix_set_screen_brightness(int value)
    #if !defined(HAVE_LAKKA_SWITCH)
    filestream_read_file("/sys/devices/platform/backlight/backlight/backlight/max_brightness",
                         &buffer, NULL);
+   #else
+   filestream_read_file("/sys/class/backlight/pwm-backlight/max_brightness",
+                        &buffer, NULL);
+   #endif
    if (buffer)
    {
       sscanf(buffer, "%u", &max_brightness);
       free(buffer);
    }
-   #endif
 
    /* Calculate the brightness */
    value = (value * max_brightness) / 100;
 
    snprintf(svalue, sizeof(svalue), "%d\n", value);
+   #if !defined(HAVE_LAKKA_SWITCH)
    filestream_write_file("/sys/class/backlight/backlight/brightness",
                          svalue, strlen(svalue));
+   #else
+   filestream_write_file("/sys/class/backlight/pwm-backlight/brightness",
+                         svalue, strlen(svalue));
+   #endif
 }
-
 #endif
 
 static void frontend_unix_get_env(int *argc,
